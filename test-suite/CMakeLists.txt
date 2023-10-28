@@ -1,4 +1,5 @@
 set(QL_TEST_SOURCES
+    aaa_calendars.cpp
     americanoption.cpp
     amortizingbond.cpp
     andreasenhugevolatilityinterpl.cpp
@@ -172,6 +173,7 @@ set(QL_TEST_SOURCES
 )
 
 set(QL_TEST_HEADERS
+    aaa_calendars.hpp
     americanoption.hpp
     amortizingbond.hpp
     andreasenhugevolatilityinterpl.hpp
@@ -348,7 +350,7 @@ set(QL_TEST_HEADERS
 
 set(QL_BENCHMARK_SOURCES
     quantlibbenchmark.cpp
-    
+
     americanoption.cpp                  americanoption.hpp
     asianoptions.cpp                    asianoptions.hpp
     barrieroption.cpp                   barrieroption.hpp
