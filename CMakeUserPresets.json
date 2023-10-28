@@ -1,0 +1,24 @@
+{
+    "version": 3,
+    "configurePresets": [
+        {
+            "name": "pauls",
+            "description": "Pauls Preset",
+            "hidden": false,
+            "inherits": [
+                "linux-clang-base",
+                "ninja",
+                "_debug"
+            ],
+            "cacheVariables": {
+                "CMAKE_CXX_STANDARD": "20",
+                "QL_USE_STD_SHARED_PTR": "ON",
+                "QL_USE_STD_ANY": "ON",
+                "QL_USE_STD_OPTIONAL": "ON",
+                "QL_USE_STD_FUNCTION": "ON",
+                "QL_USE_STD_TUPLE": "ON",
+                "QL_COMPILE_WARNING_AS_ERROR": "ON"
+            }
+        }
+    ]
+}
