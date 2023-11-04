@@ -55,7 +55,8 @@ def main() -> None:
             ql.Actual360(),
             handle,
         )
-        calendar = ql.JointCalendar(ql.UnitedStates(ql.UnitedStates.FederalReserve), ql.Chile())
+        calendar = ql.JointCalendar(ql.UnitedStates(ql.UnitedStates.FederalReserve), ql.Chile())}
+
         helpers = [
             ql.OISRateHelper(
                 2,
