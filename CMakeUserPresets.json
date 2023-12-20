@@ -1,0 +1,44 @@
+{
+    "version": 3,
+    "configurePresets": [
+        {
+            "name": "ccache-mold",
+            "hidden": true,
+            "cacheVariables": {
+                "CMAKE_CXX_COMPILER_LAUNCHER": "ccache",
+                "CMAKE_EXE_LINKER_FLAGS": "-fuse-ld=mold",
+                "CMAKE_SHARED_LINKER_FLAGS": "-fuse-ld=mold",
+                "QL_COMPILE_WARNING_AS_ERROR": "ON"
+            }
+        },
+        {
+            "name": "debug-ccache-mold",
+            "hidden": false,
+            "inherits": [
+                "ccache-mold",
+                "linux-clang-ninja-debug"
+            ]
+        },
+        {
+            "name": "debug-ccache-mold-tidy",
+            "hidden": false,
+            "inherits": [
+                "debug-ccache-mold"
+            ],
+            "cacheVariables": {
+                "QL_USE_CLANG_TIDY": "ON"
+            }
+        },
+        {
+            "name": "profiling",
+            "hidden": false,
+            "inherits": [
+                "ccache-mold",
+                "linux-clang-ninja-relwithdebinfo"
+            ],
+            "cacheVariables": {
+                "CMAKE_CXX_FLAGS": "-pg"
+            }
+        }
+    ]
+}
