@@ -36,6 +36,7 @@ set(QL_TEST_SOURCES
     compiledboostversion.cpp
     compoundoption.cpp
     convertiblebonds.cpp
+    coupon.cpp
     covariance.cpp
     creditdefaultswap.cpp
     creditriskplus.cpp

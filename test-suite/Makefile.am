@@ -38,6 +38,7 @@ QL_TEST_SRCS = \
 	compiledboostversion.cpp \
 	compoundoption.cpp \
 	convertiblebonds.cpp \
+	coupon.cpp \
 	covariance.cpp \
 	creditdefaultswap.cpp \
 	creditriskplus.cpp \
