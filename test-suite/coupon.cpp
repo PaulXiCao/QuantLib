@@ -20,6 +20,8 @@
 #include "toplevelfixture.hpp"
 #include <ql/cashflow.hpp>
 #include <ql/cashflows/fixedratecoupon.hpp>
+#include <ql/cashflows/floatingratecoupon.hpp>
+#include <ql/indexes/ibor/euribor.hpp>
 #include <ql/interestrate.hpp>
 #include <ql/patterns/visitor.hpp>
 #include <ql/time/daycounters/simpledaycounter.hpp>
@@ -100,6 +102,40 @@ BOOST_AUTO_TEST_CASE(test_FixedRateLeg_withCouponRates_InterestRate) {
     const auto tol = boost::test_tools::tolerance(1e-15);
     BOOST_TEST(leg.at(0)->amount() == 5, tol);  // 1 year (note: Simple Compounding)
     BOOST_TEST(leg.at(1)->amount() == 15, tol); // 3 more years (note: Simple Compounding)
+}
+
+#define UNUSED(x) (void)x
+
+BOOST_AUTO_TEST_CASE(test_FloatingRateCoupon_convexityAdjustment) {
+    BOOST_TEST_MESSAGE("Testing convexity adjustment of FloatingRateCoupon...");
+
+    const Date paymentDate(1, July, 2020);
+    Real nominal = 123;
+    const Date startDate(1, April, 2020);
+    const Date endDate(30, June, 2020);
+    Natural fixingDays = 0;
+    const ext::shared_ptr<InterestRateIndex> index = ext::make_shared<Euribor6M>();
+    // ext::shared_ptr<InterestRateIndex> i1 = ext::make_shared<Euribor6M>();
+    // UNUSED(i1);
+
+    const auto& ts = index->timeSeries();
+    std::cout << "ts size: " << ts.size() << '\n';
+    for (const auto kv : ts) {
+        std::cout << "date: " << kv.first << ", fixing: " << kv.second << '\n';
+        ;
+    }
+    const Real gearing = 1.5;
+    const Spread spread = 0.3;
+    const FloatingRateCoupon coupon(paymentDate, nominal, startDate, endDate, fixingDays, index,
+                                    gearing, spread);
+
+    index->addFixing(startDate, 0.0123);
+
+    std::cout << "fixing: " << coupon.fixingDate() << '\n';
+    std::cout << "fixing: " << coupon.indexFixing() << '\n';
+
+
+    UNUSED(index);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
