@@ -38,6 +38,7 @@
 #include <ql/pricingengines/vanilla/juquadraticengine.hpp>
 #include <ql/pricingengines/vanilla/qdfpamericanengine.hpp>
 #include <ql/pricingengines/vanilla/qdplusamericanengine.hpp>
+#include <ql/quantlib.hpp>
 #include <ql/termstructures/volatility/equityfx/blackconstantvol.hpp>
 #include <ql/termstructures/yield/flatforward.hpp>
 #include <ql/time/daycounters/actual360.hpp>
@@ -51,6 +52,59 @@ using namespace boost::unit_test_framework;
 BOOST_FIXTURE_TEST_SUITE(QuantLibTests, TopLevelFixture)
 
 BOOST_AUTO_TEST_SUITE(AmericanOptionTests)
+
+BOOST_AUTO_TEST_CASE(pauls) {
+    // Set up the yield curve and index
+    Calendar calendar = TARGET();
+    Date settlementDate(1, Jan, 2022);
+    Settings::instance().evaluationDate() = settlementDate;
+
+    // Sample market rate helpers (replace with your actual data)
+    boost::shared_ptr<Quote> depositRate(new SimpleQuote(0.01));
+    boost::shared_ptr<Quote> futureRate(new SimpleQuote(0.015));
+
+    boost::shared_ptr<RateHelper> depositHelper(new DepositRateHelper(
+        /*rate*/ Handle<Quote>(depositRate), /*tenor*/ 3 * Months, /*fixingDays*/ 0, calendar,
+        /*convention*/ ModifiedFollowing, /*endOfMonth*/ false, /*dayCounter*/ Actual360()));
+    boost::shared_ptr<RateHelper> futureHelper(new FuturesRateHelper(
+        /*price*/ Handle<Quote>(futureRate), /*iborStartDate*/ IMM::nextDate(Date(1, Jan, 2022)),
+        /*lengthInMonths*/ 3, calendar, /*convention*/ ModifiedFollowing, /*endOfMonth*/ true,
+        /*dayCounter*/ Actual360()));
+
+    // Create a term structure with spot starting swap rate helpers
+    std::vector<boost::shared_ptr<RateHelper>> rateHelpers;
+    rateHelpers.push_back(depositHelper);
+    rateHelpers.push_back(futureHelper);
+
+    boost::shared_ptr<YieldTermStructure> termStructure(
+        new PiecewiseYieldCurve<Discount, LogLinear>(0, calendar, rateHelpers, Actual360()));
+
+    RelinkableHandle<YieldTermStructure> termStructureHandle(termStructure);
+
+    // Swap index
+    boost::shared_ptr<IborIndex> index(new Euribor6M(termStructureHandle));
+
+    // Create a spot starting vanilla swap
+    Date startDate(1, Jan, 2023);
+    Date endDate(1, Jan, 2028);
+    Rate fixedRate = 0.02;
+
+    Schedule fixedSchedule(startDate, endDate, Period(1, Years), NullCalendar(), ModifiedFollowing,
+                           ModifiedFollowing, DateGeneration::Forward, false);
+    FixedRateLeg fixedLeg = FixedRateLeg(fixedSchedule).withCouponRates(std::vector<Rate>(1, fixedRate), Actual360());
+    FloatingRateLeg floatingLeg = IborLeg(fixedSchedule, index);
+    FloatingRateLeg floatingLeg = IborLeg(std::vector<Rate>(1, 1), index);
+
+    VanillaSwap swap(VanillaSwap::Payer, 1.0, fixedLeg, floatingLeg);
+
+    // Set the BlackIborCouponPricer for timing adjustments
+    boost::shared_ptr<BlackIborCouponPricer> pricer(new BlackIborCouponPricer());
+    swap.setCouponPricer(pricer);
+
+    // Calculate NPV
+    Real npv = swap.NPV();
+    std::cout << "Swap NPV with timing adjustments: " << npv << std::endl;
+}
 
 #undef REPORT_FAILURE
 #define REPORT_FAILURE(greekName, payoff, exercise, s, q, r, today, \
@@ -1460,7 +1514,7 @@ BOOST_AUTO_TEST_CASE(testAndersenLakeHighPrecisionExample) {
         Real expected[2];
         Real tol;
     };
-    
+
     const SchemeSpec testCases[] = {
         { 24, 3, 9,  0.05, {0.1069528125898476, 0.1069524359360852}, 1e-6},
         {  5, 1, 4,  0.05, {0.1070237787625299, 0.1070042740171235}, 1e-3},
